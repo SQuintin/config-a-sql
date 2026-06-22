@@ -1,0 +1,1920 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>SQL En Masse Config Forge</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --panel: #111c33;
+      --panel-3: #1e2d4d;
+      --text: #e5e7eb;
+      --muted: #94a3b8;
+      --muted-2: #64748b;
+      --border: #334155;
+      --accent: #38bdf8;
+      --good: #22c55e;
+      --warn: #f59e0b;
+      --bad: #ef4444;
+      --shadow: rgba(0, 0, 0, 0.35);
+      --focus: rgba(56, 189, 248, 0.3);
+      --code: #08111f;
+      --input: #0b1324;
+      --chip: #203251;
+      --radius: 16px;
+      --radius-sm: 10px;
+      --font: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(56, 189, 248, 0.18), transparent 34rem),
+        radial-gradient(circle at bottom right, rgba(14, 165, 233, 0.13), transparent 32rem),
+        var(--bg);
+      font-family: var(--font);
+      line-height: 1.45;
+    }
+
+    a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    code {
+      color: #bae6fd;
+      font-family: var(--mono);
+    }
+
+    .wrap {
+      width: min(1280px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 32px 0 48px;
+    }
+
+    header {
+      display: flex;
+      gap: 20px;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 22px;
+    }
+
+    .title-block h1 {
+      margin: 0 0 8px;
+      font-size: clamp(1.7rem, 4vw, 2.7rem);
+      letter-spacing: -0.035em;
+    }
+
+    .title-block p {
+      max-width: 900px;
+      margin: 0;
+      color: var(--muted);
+      font-size: 1rem;
+    }
+
+    .badge {
+      display: inline-flex;
+      gap: 8px;
+      align-items: center;
+      padding: 8px 12px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: rgba(17, 28, 51, 0.75);
+      color: var(--muted);
+      white-space: nowrap;
+      font-size: 0.9rem;
+      box-shadow: 0 10px 30px var(--shadow);
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(360px, 0.9fr);
+      gap: 18px;
+      align-items: start;
+    }
+
+    @media (max-width: 980px) {
+      header {
+        flex-direction: column;
+      }
+
+      .badge {
+        white-space: normal;
+      }
+
+      .layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .card {
+      background: linear-gradient(180deg, rgba(22, 35, 61, 0.98), rgba(17, 28, 51, 0.98));
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: 0 24px 70px var(--shadow);
+      overflow: hidden;
+    }
+
+    .card-header {
+      padding: 18px 20px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(15, 23, 42, 0.45);
+    }
+
+    .card-header h2 {
+      margin: 0 0 4px;
+      font-size: 1.1rem;
+      letter-spacing: -0.015em;
+    }
+
+    .card-header p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    .card-body {
+      padding: 20px;
+    }
+
+    .section {
+      padding: 18px 0;
+      border-top: 1px solid rgba(51, 65, 85, 0.7);
+      scroll-margin-top: 24px;
+    }
+
+    .section:first-child {
+      padding-top: 0;
+      border-top: 0;
+    }
+
+    .section-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .section-title h3 {
+      margin: 0;
+      font-size: 1rem;
+      letter-spacing: -0.01em;
+    }
+
+    .section-title .hint {
+      color: var(--muted-2);
+      font-size: 0.82rem;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    @media (max-width: 720px) {
+      .grid,
+      .grid-3 {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    label {
+      display: block;
+      color: var(--text);
+      font-weight: 650;
+      font-size: 0.92rem;
+      margin-bottom: 7px;
+    }
+
+    .required {
+      color: var(--warn);
+      font-weight: 800;
+    }
+
+    .default-note,
+    .field-help {
+      color: var(--muted);
+      font-size: 0.82rem;
+      margin-top: 6px;
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      color: var(--text);
+      background: var(--input);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 11px 12px;
+      font: inherit;
+      outline: none;
+      transition: border-color 120ms ease, box-shadow 120ms ease;
+    }
+
+    input[type="file"] {
+      padding: 10px;
+      color: var(--muted);
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 4px var(--focus);
+    }
+
+    input.invalid,
+    select.invalid,
+    textarea.invalid {
+      border-color: var(--bad);
+      box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.14);
+    }
+
+    .radio-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .radio-card {
+      flex: 1 1 210px;
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      padding: 12px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: rgba(11, 19, 36, 0.75);
+      cursor: pointer;
+    }
+
+    .radio-card input {
+      width: auto;
+      margin-top: 3px;
+    }
+
+    .radio-card strong {
+      display: block;
+      margin-bottom: 2px;
+    }
+
+    .radio-card span {
+      display: block;
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+
+    .btn-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    button {
+      border: 0;
+      border-radius: 999px;
+      padding: 11px 16px;
+      color: #06111f;
+      background: var(--accent);
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 12px 24px rgba(56, 189, 248, 0.18);
+      transition: transform 120ms ease, filter 120ms ease;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.04);
+    }
+
+    button.secondary {
+      color: var(--text);
+      background: var(--panel-3);
+      box-shadow: none;
+      border: 1px solid var(--border);
+    }
+
+    button.danger {
+      color: #fff;
+      background: #b91c1c;
+      box-shadow: none;
+    }
+
+    .pill-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .pill {
+      display: inline-flex;
+      gap: 6px;
+      align-items: center;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: var(--chip);
+      padding: 6px 9px;
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 0.82rem;
+    }
+
+    .notice {
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: rgba(8, 17, 31, 0.55);
+      padding: 12px;
+      color: var(--muted);
+      font-size: 0.9rem;
+      margin-top: 10px;
+    }
+
+    .notice.good {
+      border-color: rgba(34, 197, 94, 0.45);
+      background: rgba(34, 197, 94, 0.08);
+      color: #bbf7d0;
+    }
+
+    .notice.warn {
+      border-color: rgba(245, 158, 11, 0.48);
+      background: rgba(245, 158, 11, 0.08);
+      color: #fde68a;
+    }
+
+    .notice.bad {
+      border-color: rgba(239, 68, 68, 0.48);
+      background: rgba(239, 68, 68, 0.08);
+      color: #fecaca;
+    }
+
+    .var-list {
+      display: grid;
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    .var-card {
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: rgba(11, 19, 36, 0.62);
+      padding: 12px;
+      scroll-margin-top: 24px;
+    }
+
+    .var-card .var-name {
+      color: var(--accent);
+      font-family: var(--mono);
+      font-weight: 800;
+      margin-bottom: 8px;
+      word-break: break-word;
+    }
+
+    .side {
+      position: sticky;
+      top: 16px;
+    }
+
+    @media (max-width: 980px) {
+      .side {
+        position: static;
+      }
+    }
+
+    pre {
+      margin: 0;
+      padding: 16px;
+      background: var(--code);
+      color: #dbeafe;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      overflow: auto;
+      min-height: 260px;
+      max-height: 560px;
+      font-family: var(--mono);
+      font-size: 0.86rem;
+      line-height: 1.5;
+    }
+
+    .preview-meta {
+      display: grid;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .preview-item {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: rgba(11, 19, 36, 0.62);
+    }
+
+    .preview-item span:first-child {
+      color: var(--muted);
+    }
+
+    .preview-item span:last-child {
+      font-family: var(--mono);
+      text-align: right;
+      word-break: break-all;
+    }
+
+    .errors {
+      display: none;
+      margin-bottom: 14px;
+    }
+
+    .errors ul {
+      margin: 8px 0 0;
+      padding-left: 0;
+      list-style: none;
+    }
+
+    .errors li {
+      margin: 6px 0;
+    }
+
+    .error-link {
+      display: inline;
+      padding: 0;
+      border: 0;
+      border-radius: 0;
+      background: transparent;
+      color: #fecaca;
+      box-shadow: none;
+      font: inherit;
+      font-weight: 650;
+      text-align: left;
+      cursor: pointer;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
+    .error-link:hover {
+      transform: none;
+      filter: none;
+      color: #fff;
+    }
+
+    details {
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: rgba(8, 17, 31, 0.42);
+      padding: 11px 12px;
+      margin-top: 10px;
+    }
+
+    summary {
+      cursor: pointer;
+      color: var(--accent);
+      font-weight: 750;
+    }
+
+    .small {
+      font-size: 0.84rem;
+      color: var(--muted);
+    }
+
+    .app-footer {
+      width: min(1280px, calc(100% - 32px));
+      margin: -24px auto 32px;
+      color: var(--muted-2);
+      font-size: 0.82rem;
+      text-align: center;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <header>
+      <div class="title-block">
+        <h1 id="pageTitle">SQL En Masse Config Forge</h1>
+        <p>
+          Build JSON run config files with required scheduling, destination validation,
+          optional output settings, Epic RW SQL-style variable detection, renamed SQL download support,
+          and live filename previews.
+        </p>
+      </div>
+    </header>
+
+    <div class="layout">
+      <main class="card">
+        <div class="card-header">
+          <h2>Run config details</h2>
+          <p>Fill in the required fields, optionally upload SQL to detect variables, then download the run config.</p>
+        </div>
+
+        <div class="card-body">
+          <form id="configForm" novalidate>
+            <section class="section" id="section-creator">
+              <div class="section-title">
+                <h3>1. Creator</h3>
+                <span class="hint"><span class="required">*</span> required</span>
+              </div>
+
+              <div class="grid">
+                <div>
+                  <label for="configcreationuser">Your name <span class="required">*</span></label>
+                  <input id="configcreationuser" autocomplete="name" placeholder="Example: Sky Quintin" required />
+                  <div class="field-help">
+                    Added to JSON as <code>configcreationuser</code>. Cached locally in this browser.
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <section class="section" id="section-versioning">
+              <div class="section-title">
+                <h3>2. SQL versioning</h3>
+                <span class="hint">Controls filename enforcement</span>
+              </div>
+
+              <div class="radio-row">
+                <label class="radio-card">
+                  <input type="radio" name="versionMode" value="single" checked />
+                  <span>
+                    <strong>One version</strong>
+                    <span>Use default naming unless you choose otherwise.</span>
+                  </span>
+                </label>
+
+                <label class="radio-card">
+                  <input type="radio" name="versionMode" value="multiple" />
+                  <span>
+                    <strong>Multiple versions</strong>
+                    <span>Requires <code>sqlfilename</code> and <code>outputfilename</code>. Reused names are blocked within the current group.</span>
+                  </span>
+                </label>
+              </div>
+
+              <div class="notice warn hidden" id="multipleNotice">
+                Multiple version mode is on. <strong>Sqlfilename and outputfilename are required.</strong>
+                After creating one config, change version-specific names before creating another.
+                <span id="createdGroupCount"></span>
+              </div>
+            </section>
+
+            <section class="section" id="section-required">
+              <div class="section-title">
+                <h3>3. Required settings</h3>
+                <span class="hint"><span class="required">*</span> required</span>
+              </div>
+
+              <div class="grid">
+                <div>
+                  <label for="configBaseName">Run config filename base <span class="required">*</span></label>
+                  <input id="configBaseName" autocomplete="off" placeholder="Example: Patient Registry Monthly" required />
+                  <div class="field-help">
+                    Downloaded file will be <code>&lt;base&gt;.json</code>.
+                    Also used as default SQL/output filename when optional filename fields are blank.
+                  </div>
+                </div>
+
+                <div>
+                  <label for="directory">Directory or email list <span class="required">*</span></label>
+                  <input id="directory" autocomplete="off" placeholder="//server/share/folder OR person@example.org,team@example.org" required />
+                  <div class="field-help">
+                    UNC paths must use forward slashes and start with <code>//</code>.
+                    Email destinations must be comma-delimited valid email addresses.
+                  </div>
+                </div>
+
+                <div>
+                  <label for="recurrence">Recurrence <span class="required">*</span></label>
+                  <select id="recurrence" required>
+                    <option value="daily">daily</option>
+                    <option value="dayofmonth">dayofmonth</option>
+                    <option value="dayofweek">dayofweek</option>
+                    <option value="datelist">datelist</option>
+                  </select>
+                  <div class="field-help">
+                    Daily does not need timing. Other recurrence types require a valid value.
+                  </div>
+                </div>
+
+                <div id="timingWrap" class="hidden">
+                  <label for="timing" id="timingLabel">Timing <span class="required">*</span></label>
+                  <input id="timing" autocomplete="off" />
+                  <div class="field-help" id="timingHelp"></div>
+                </div>
+              </div>
+            </section>
+
+            <section class="section" id="section-sql">
+              <div class="section-title">
+                <h3>4. SQL file and variables</h3>
+                <span class="hint">Variables come only from SQL upload</span>
+              </div>
+
+              <div class="grid">
+                <div>
+                  <label for="sqlUpload">Upload SQL file</label>
+                  <input id="sqlUpload" type="file" accept=".sql,text/plain" />
+                  <div class="field-help">
+                    Only Epic RW SQL-style variables are detected:
+                    <code>{{example_variable}}</code>.
+                    The full token is used exactly as-is as the JSON key.
+                  </div>
+                </div>
+
+                <div>
+                  <label for="sqlfilename">
+                    Sqlfilename <span id="sqlfilenameRequiredMark" class="required hidden">*</span>
+                  </label>
+                  <input id="sqlfilename" autocomplete="off" placeholder="Optional: SQL file name without .sql" />
+                  <div class="default-note">
+                    Optional for one version. Required for multiple versions.
+                    Do not include <code>.sql</code>.
+                    If this differs from the uploaded SQL filename, a renamed copy of the SQL file is downloaded too.
+                  </div>
+                </div>
+              </div>
+
+              <div id="sqlStatus" class="notice">
+                No SQL file uploaded. Variable inputs will appear here after upload.
+              </div>
+
+              <div id="detectedVars" class="pill-row"></div>
+              <div id="variableInputs" class="var-list"></div>
+            </section>
+
+            <section class="section" id="section-optional">
+              <div class="section-title">
+                <h3>5. Optional output settings</h3>
+                <span class="hint">Defaults are omitted from JSON</span>
+              </div>
+
+              <div class="grid-3">
+                <div>
+                  <label for="delimiter">Delimiter</label>
+                  <input id="delimiter" autocomplete="off" placeholder="," />
+                  <div class="default-note">Optional. Default: comma.</div>
+                </div>
+
+                <div>
+                  <label for="extension">Extension</label>
+                  <select id="extension">
+                    <option value="">Default csv</option>
+                    <option value="csv">csv</option>
+                    <option value="txt">txt</option>
+                    <option value="xlsx">xlsx</option>
+                  </select>
+                  <div class="default-note">Optional. Default: csv. xlsx ignores delimiter.</div>
+                </div>
+
+                <div>
+                  <label for="enforced_text_qualifier">Enforced text qualifier</label>
+                  <select id="enforced_text_qualifier">
+                    <option value="">Default</option>
+                    <option value="yes">yes</option>
+                    <option value="no">no</option>
+                    <option value="minimal">minimal</option>
+                    <option value="all">all</option>
+                    <option value="none">none</option>
+                    <option value="raw">raw</option>
+                  </select>
+                  <div class="default-note">
+                    Optional. Default is omitted. Use <code>yes</code> to quote all fields.
+                  </div>
+                </div>
+
+                <div>
+                  <label for="instance">Instance</label>
+                  <input id="instance" autocomplete="off" placeholder="EpicClarityPrd" />
+                  <div class="default-note">Optional. Default: EpicClarityPrd.</div>
+                </div>
+
+                <div>
+                  <label for="database">Database</label>
+                  <input id="database" autocomplete="off" placeholder="Clarity" />
+                  <div class="default-note">Optional. Default: Clarity.</div>
+                </div>
+
+                <div>
+                  <label for="datestamp">Datestamp</label>
+                  <input id="datestamp" autocomplete="off" placeholder="%Y%m%d" />
+                  <div class="default-note">
+                    Optional. Default: no datestamp unless <code>{{datestamp}}</code> is used in outputfilename.
+                  </div>
+                </div>
+              </div>
+
+              <details>
+                <summary>Datestamp formatting help</summary>
+                <p class="small">
+                  Datestamp uses Python <code>strftime</code> format codes.
+                  Common examples:
+                </p>
+                <ul class="small">
+                  <li><code>%Y%m%d</code> → <code>20260622</code></li>
+                  <li><code>%Y-%m-%d</code> → <code>2026-06-22</code></li>
+                  <li><code>%m%d%Y</code> → <code>06222026</code></li>
+                  <li><code>%Y%m</code> → <code>202606</code></li>
+                  <li><code>%Y%m%d_%H%M%S</code> → <code>20260622_105301</code></li>
+                </ul>
+                <p class="small">
+                  Full Python docs:
+                  <a href="https://docs.python.org/3/library/datetime.html#strftime-and-strptime-format-codes" target="_blank" rel="noopener">
+                    strftime and strptime format codes
+                  </a>.
+                </p>
+              </details>
+            </section>
+
+            <section class="section" id="section-outputfilename">
+              <div class="section-title">
+                <h3>6. Output filename</h3>
+                <span class="hint">Supports mid-name datestamp</span>
+              </div>
+
+              <div>
+                <label for="outputfilename">
+                  Outputfilename <span id="outputRequiredMark" class="required hidden">*</span>
+                </label>
+                <input id="outputfilename" autocomplete="off" placeholder="Optional: output file with {{datestamp}} in the middle" />
+                <div class="field-help">
+                  Optional for one version. Required for multiple versions.
+                  Add <code>{{datestamp}}</code> anywhere in the name to place the datestamp mid-name.
+                </div>
+              </div>
+
+              <div class="btn-row" style="margin-top: 10px;">
+                <button type="button" class="secondary" id="insertDatestampBtn">Insert {{datestamp}}</button>
+                <button type="button" class="secondary" id="appendDatestampBtn">Append {{datestamp}}</button>
+              </div>
+            </section>
+
+            <section class="section" id="section-actions">
+              <div class="btn-row">
+                <button type="button" id="createBtn">Create / download run config</button>
+                <button type="button" class="secondary" id="copyBtn">Copy JSON</button>
+                <button type="button" class="secondary" id="downloadAgainBtn">Download current preview</button>
+                <button type="button" class="danger" id="clearBtn">Clear all fields</button>
+              </div>
+
+              <div id="successNotice" class="notice good hidden"></div>
+            </section>
+
+          </form>
+        </div>
+      </main>
+
+      <aside class="card side">
+        <div class="card-header">
+          <h2>Preview</h2>
+          <p>Review generated names and JSON before creating the file.</p>
+        </div>
+
+        <div class="card-body">
+          <div id="errors" class="notice bad errors">
+            <strong>Please fix:</strong>
+            <ul id="errorList"></ul>
+          </div>
+
+          <div class="preview-meta">
+            <div class="preview-item">
+              <span>Config file</span>
+              <span id="previewConfigName">—</span>
+            </div>
+            <div class="preview-item">
+              <span>Output file</span>
+              <span id="previewOutputName">—</span>
+            </div>
+            <div class="preview-item">
+              <span>SQL download</span>
+              <span id="previewSqlDownloadName">—</span>
+            </div>
+          </div>
+
+          <pre id="jsonPreview">{}</pre>
+
+          <div class="notice">
+            Output JSON is beautified with two-space indentation.
+            Optional default values are omitted from the JSON.
+          </div>
+        </div>
+      </aside>
+    </div>
+  </div>
+<footer class="app-footer" id="appFooter"></footer>
+  <script>
+    /*
+      App naming constants.
+
+      INTERNAL_APP_NAME is written to JSON under configcreationapp.
+      DISPLAY_APP_NAME is shown on the page.
+    */
+    const INTERNAL_APP_NAME = "Config-a-SQL";
+    const DISPLAY_APP_NAME = "SQL En Masse Config Forge";
+    const APP_VERSION = "0.1.0";
+    const APP_CREATED_BY = "Created by Sky Quintin";
+
+    const DEFAULTS = {
+      delimiter: ",",
+      extension: "csv",
+      instance: "EpicClarityPrd",
+      database: "Clarity"
+    };
+
+    const STORAGE_KEYS = {
+      configcreationuser: "sqlEnMasse.configcreationuser"
+    };
+
+    const state = {
+      sqlFileName: "",
+      sqlText: "",
+      detectedVariables: [],
+      createdMultiVersionNames: []
+    };
+
+    const el = id => document.getElementById(id);
+
+    const fields = {
+      form: el("configForm"),
+      pageTitle: el("pageTitle"),
+      configcreationuser: el("configcreationuser"),
+      configBaseName: el("configBaseName"),
+      directory: el("directory"),
+      recurrence: el("recurrence"),
+      timingWrap: el("timingWrap"),
+      timing: el("timing"),
+      timingLabel: el("timingLabel"),
+      timingHelp: el("timingHelp"),
+      sqlUpload: el("sqlUpload"),
+      sqlfilename: el("sqlfilename"),
+      sqlfilenameRequiredMark: el("sqlfilenameRequiredMark"),
+      sqlStatus: el("sqlStatus"),
+      detectedVars: el("detectedVars"),
+      variableInputs: el("variableInputs"),
+      delimiter: el("delimiter"),
+      extension: el("extension"),
+      enforced_text_qualifier: el("enforced_text_qualifier"),
+      instance: el("instance"),
+      database: el("database"),
+      datestamp: el("datestamp"),
+      outputfilename: el("outputfilename"),
+      outputRequiredMark: el("outputRequiredMark"),
+      multipleNotice: el("multipleNotice"),
+      createdGroupCount: el("createdGroupCount"),
+      errors: el("errors"),
+      errorList: el("errorList"),
+      jsonPreview: el("jsonPreview"),
+      previewConfigName: el("previewConfigName"),
+      previewOutputName: el("previewOutputName"),
+      previewSqlDownloadName: el("previewSqlDownloadName"),
+      successNotice: el("successNotice"),
+      appFooter: el("appFooter")
+    };
+
+    function initAppMetadata() {
+      document.title = DISPLAY_APP_NAME;
+      fields.pageTitle.textContent = DISPLAY_APP_NAME;
+      fields.appFooter.innerHTML = `
+        <div>${INTERNAL_APP_NAME} v${APP_VERSION}</div>
+        <div>${APP_CREATED_BY}</div>
+      `;
+
+    }
+
+    function loadCachedUser() {
+      const cached = localStorage.getItem(STORAGE_KEYS.configcreationuser);
+      if (cached) {
+        fields.configcreationuser.value = cached;
+      }
+    }
+
+    function cacheUser() {
+      const name = fields.configcreationuser.value.trim();
+      if (name) {
+        localStorage.setItem(STORAGE_KEYS.configcreationuser, name);
+      }
+    }
+
+    function getConfigCreationApp() {
+      return `${INTERNAL_APP_NAME} v${APP_VERSION}`;
+    }
+
+    function getLocalDateTimeStamp(date = new Date()) {
+      const yyyy = date.getFullYear();
+      const mm = String(date.getMonth() + 1).padStart(2, "0");
+      const dd = String(date.getDate()).padStart(2, "0");
+      const hh = String(date.getHours()).padStart(2, "0");
+      const mi = String(date.getMinutes()).padStart(2, "0");
+      const ss = String(date.getSeconds()).padStart(2, "0");
+      return `${yyyy}-${mm}-${dd} ${hh}:${mi}:${ss}`;
+    }
+
+    function sanitizeFileBaseName(name) {
+      return String(name || "")
+        .trim()
+        .replace(/\.json$/i, "")
+        .replace(/[\\/:*?"<>|]+/g, "")
+        .replace(/\s+/g, " ");
+    }
+
+    function stripSqlExtension(name) {
+      return String(name || "").trim().replace(/\.sql$/i, "");
+    }
+
+    function normalizeNameForCompare(value) {
+      return String(value || "").trim().toLowerCase();
+    }
+
+    function getVersionMode() {
+      return document.querySelector("input[name='versionMode']:checked")?.value || "single";
+    }
+
+    function updateVersionModeUi() {
+      const multiple = getVersionMode() === "multiple";
+      fields.multipleNotice.classList.toggle("hidden", !multiple);
+      fields.outputRequiredMark.classList.toggle("hidden", !multiple);
+      fields.sqlfilenameRequiredMark.classList.toggle("hidden", !multiple);
+
+      if (multiple && state.createdMultiVersionNames.length) {
+        fields.createdGroupCount.textContent = ` Current group has ${state.createdMultiVersionNames.length} created config file(s).`;
+      } else {
+        fields.createdGroupCount.textContent = "";
+      }
+    }
+
+    function updateTimingUi() {
+      const recurrence = fields.recurrence.value;
+
+      if (recurrence === "daily") {
+        fields.timingWrap.classList.add("hidden");
+        fields.timing.value = "";
+        return;
+      }
+
+      fields.timingWrap.classList.remove("hidden");
+
+      if (recurrence === "dayofmonth") {
+        fields.timingLabel.innerHTML = 'Calendar day <span class="required">*</span>';
+        fields.timing.placeholder = "1-31";
+        fields.timingHelp.textContent = "Enter an integer from 1 through 31.";
+      } else if (recurrence === "dayofweek") {
+        fields.timingLabel.innerHTML = 'Day of week <span class="required">*</span>';
+        fields.timing.placeholder = "1-7";
+        fields.timingHelp.textContent = "Enter an integer from 1 through 7. Monday = 1, Sunday = 7.";
+      } else if (recurrence === "datelist") {
+        fields.timingLabel.innerHTML = 'Dates <span class="required">*</span>';
+        fields.timing.placeholder = "01-05,04-05,07-05,10-05";
+        fields.timingHelp.textContent = "Enter one or more MM-DD dates, comma-delimited.";
+      }
+    }
+
+    function isValidEmailList(value) {
+      const emails = value.split(",").map(x => x.trim()).filter(Boolean);
+      if (!emails.length) return false;
+      const emailRe = /^[^\s@,]+@[^\s@,]+\.[^\s@,]+$/;
+      return emails.every(email => emailRe.test(email));
+    }
+
+    function isValidForwardSlashUnc(value) {
+      const v = value.trim();
+      if (!v.startsWith("//")) return false;
+      if (v.includes("\\")) return false;
+      if (v.length <= 2) return false;
+      return true;
+    }
+
+    function isValidDirectoryOrEmails(value) {
+      const v = String(value || "").trim();
+      if (!v) return false;
+      return isValidForwardSlashUnc(v) || isValidEmailList(v);
+    }
+
+    function parseDatelist(value) {
+      return String(value || "")
+        .split(",")
+        .map(x => x.trim())
+        .filter(Boolean);
+    }
+
+    function isValidTiming(recurrence, value) {
+      const v = String(value || "").trim();
+
+      if (recurrence === "daily") return true;
+      if (!v) return false;
+
+      if (recurrence === "dayofmonth") {
+        if (!/^\d+$/.test(v)) return false;
+        const n = Number(v);
+        return n >= 1 && n <= 31;
+      }
+
+      if (recurrence === "dayofweek") {
+        if (!/^\d+$/.test(v)) return false;
+        const n = Number(v);
+        return n >= 1 && n <= 7;
+      }
+
+      if (recurrence === "datelist") {
+        const dates = parseDatelist(v);
+        if (!dates.length) return false;
+        return dates.every(d => /^(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/.test(d));
+      }
+
+      return false;
+    }
+
+    function stripSqlComments(sql) {
+      return String(sql || "")
+        .replace(/\/\*[\s\S]*?\*\//g, " ")
+        .replace(/--.*$/gm, " ");
+    }
+
+    function parseSqlVariables(sqlText) {
+      const text = stripSqlComments(sqlText);
+      const found = new Set();
+      const re = /\{\{\s*[^{}]+?\s*\}\}/g;
+
+      let match;
+      while ((match = re.exec(text)) !== null) {
+        found.add(match[0]);
+      }
+
+      return Array.from(found).sort((a, b) => a.localeCompare(b));
+    }
+
+    function makeSafeVariableId(variable) {
+      return "var_" + btoa(unescape(encodeURIComponent(variable)))
+        .replaceAll("=", "")
+        .replaceAll("+", "_")
+        .replaceAll("/", "-");
+    }
+
+    function renderVariables() {
+      fields.detectedVars.innerHTML = "";
+      fields.variableInputs.innerHTML = "";
+
+      if (!state.detectedVariables.length) {
+        fields.sqlStatus.className = "notice";
+        fields.sqlStatus.textContent = state.sqlFileName
+          ? `Uploaded ${state.sqlFileName}, but no {{variable}} placeholders were detected.`
+          : "No SQL file uploaded. Variable inputs will appear here after upload.";
+        return;
+      }
+
+      fields.sqlStatus.className = "notice good";
+      fields.sqlStatus.textContent = `Detected ${state.detectedVariables.length} variable(s) from ${state.sqlFileName}.`;
+
+      for (const variable of state.detectedVariables) {
+        const pill = document.createElement("span");
+        pill.className = "pill";
+        pill.textContent = variable;
+        fields.detectedVars.appendChild(pill);
+
+        const card = document.createElement("div");
+        card.className = "var-card";
+        card.id = `card_${makeSafeVariableId(variable)}`;
+
+        const name = document.createElement("div");
+        name.className = "var-name";
+        name.textContent = variable;
+
+        const input = document.createElement("input");
+        input.id = makeSafeVariableId(variable);
+        input.dataset.variableName = variable;
+        input.placeholder = "Examples: 42 or Cardiology Clinic or 'A B', 'C D' or 101, 102, 103";
+        input.autocomplete = "off";
+
+        const help = document.createElement("div");
+        help.className = "field-help";
+        help.textContent =
+          "Allowed: one value or a comma-delimited list. Single strings may be entered with or without single quotes. String lists must single-quote each item. Numeric values may be quoted or unquoted. Double quotes and parentheses are refused.";
+
+        input.addEventListener("input", updatePreview);
+
+        card.appendChild(name);
+        card.appendChild(input);
+        card.appendChild(help);
+        fields.variableInputs.appendChild(card);
+      }
+    }
+
+    function isNumericLiteral(value) {
+      return /^-?(0|[1-9]\d*)(\.\d+)?$/.test(String(value || "").trim());
+    }
+
+    function splitCommaListRespectingSingleQuotes(value) {
+      const text = String(value || "");
+      const parts = [];
+      let current = "";
+      let inSingleQuote = false;
+
+      for (let i = 0; i < text.length; i++) {
+        const ch = text[i];
+        const next = text[i + 1];
+
+        if (ch === "'") {
+          if (inSingleQuote && next === "'") {
+            current += "''";
+            i++;
+            continue;
+          }
+
+          inSingleQuote = !inSingleQuote;
+          current += ch;
+          continue;
+        }
+
+        if (ch === "," && !inSingleQuote) {
+          parts.push(current.trim());
+          current = "";
+          continue;
+        }
+
+        current += ch;
+      }
+
+      parts.push(current.trim());
+
+      return {
+        parts,
+        hasUnclosedSingleQuote: inSingleQuote
+      };
+    }
+
+    function hasRefusedCharacters(raw) {
+      return /["()[\]{}]/.test(raw);
+    }
+
+    function parseVariableInput(rawValue) {
+      const raw = String(rawValue || "").trim();
+
+      if (!raw) {
+        return {
+          ok: false,
+          message: "Value is required."
+        };
+      }
+
+      if (hasRefusedCharacters(raw)) {
+        return {
+          ok: false,
+          message: "Double quotes, parentheses, square brackets, and curly braces are not allowed in variable values."
+        };
+      }
+
+      const { parts, hasUnclosedSingleQuote } = splitCommaListRespectingSingleQuotes(raw);
+
+      if (hasUnclosedSingleQuote) {
+        return {
+          ok: false,
+          message: "Single quotes are not balanced."
+        };
+      }
+
+      if (!parts.length || parts.some(p => !p)) {
+        return {
+          ok: false,
+          message: "List values cannot be blank."
+        };
+      }
+
+      /*
+        Single value rules:
+          42                     -> number 42
+          '42'                   -> number 42
+          Cardiology Clinic      -> string "Cardiology Clinic"
+          'Cardiology Clinic'    -> string "Cardiology Clinic"
+
+        For a single value, non-numeric strings do NOT require single quotes.
+      */
+      if (parts.length === 1) {
+        const token = parts[0].trim();
+        const isSingleQuoted = token.startsWith("'") && token.endsWith("'") && token.length >= 2;
+        const containsSingleQuote = token.includes("'");
+
+        if (containsSingleQuote && !isSingleQuoted) {
+          return {
+            ok: false,
+            message: `Invalid quote placement in ${token}. If using single quotes, quote the entire value.`
+          };
+        }
+
+        const inner = isSingleQuoted ? token.slice(1, -1).trim() : token;
+
+        if (!inner) {
+          return {
+            ok: false,
+            message: "Quoted values cannot be blank."
+          };
+        }
+
+        if (isNumericLiteral(inner)) {
+          return {
+            ok: true,
+            value: Number(inner)
+          };
+        }
+
+        return {
+          ok: true,
+          value: inner
+        };
+      }
+
+      /*
+        List rules:
+          Numeric lists:
+            101, 102, 103
+            '101', '102', '103'
+
+          String lists:
+            'Cardiology Clinic', 'Oncology Clinic'
+
+          Rejected:
+            Cardiology Clinic, Oncology Clinic
+            101, 'Oncology Clinic'
+      */
+      const parsedItems = [];
+
+      for (const part of parts) {
+        const token = part.trim();
+        const isSingleQuoted = token.startsWith("'") && token.endsWith("'") && token.length >= 2;
+        const containsSingleQuote = token.includes("'");
+
+        if (containsSingleQuote && !isSingleQuoted) {
+          return {
+            ok: false,
+            message: `Invalid quote placement in ${token}. Quote the entire string list item.`
+          };
+        }
+
+        const inner = isSingleQuoted ? token.slice(1, -1).trim() : token;
+
+        if (!inner) {
+          return {
+            ok: false,
+            message: "Quoted values cannot be blank."
+          };
+        }
+
+        if (isNumericLiteral(inner)) {
+          parsedItems.push({
+            type: "number",
+            numberValue: Number(inner),
+            listText: String(Number(inner))
+          });
+          continue;
+        }
+
+        if (!isSingleQuoted) {
+          return {
+            ok: false,
+            message: `String list item ${token} must be wrapped in single quotes.`
+          };
+        }
+
+        parsedItems.push({
+          type: "string",
+          stringValue: inner,
+          listText: `'${inner}'`
+        });
+      }
+
+      const typeSet = new Set(parsedItems.map(item => item.type));
+
+      if (typeSet.size > 1) {
+        return {
+          ok: false,
+          message: "Lists must be all numeric values or all string values. Mixed numeric/string lists are not allowed."
+        };
+      }
+
+      if (parsedItems.every(item => item.type === "number")) {
+        return {
+          ok: true,
+          value: parsedItems.map(item => item.listText).join(", ")
+        };
+      }
+
+      /*
+        For string lists, users enter:
+          'first value', 'second value'
+
+        The JSON value becomes:
+          first value', 'second value
+
+        This matches the existing config pattern where the Python script handles
+        the outer SQL string wrapping.
+      */
+      const stringList = parsedItems
+        .map(item => item.listText)
+        .join(", ")
+        .replace(/^'/, "")
+        .replace(/'$/, "");
+
+      return {
+        ok: true,
+        value: stringList
+      };
+    }
+
+
+    function getVariableValues() {
+      const variables = {};
+
+      for (const variable of state.detectedVariables) {
+        const input = document.querySelector(
+          `[data-variable-name="${CSS.escape(variable)}"]`
+        );
+
+        const rawValue = input ? input.value.trim() : "";
+        const parsed = parseVariableInput(rawValue);
+
+        if (parsed.ok) {
+          variables[variable] = parsed.value;
+        }
+      }
+
+      return variables;
+    }
+
+    function addIfNonDefault(config, key, value, defaultValue) {
+      const v = String(value ?? "").trim();
+      if (!v) return;
+      if (v === defaultValue) return;
+      config[key] = v;
+    }
+
+    function buildConfig() {
+      const config = {};
+
+      const baseName = sanitizeFileBaseName(fields.configBaseName.value);
+      const recurrence = fields.recurrence.value;
+
+      config.recurrence = recurrence;
+
+      if (recurrence === "datelist") {
+        config.dates = parseDatelist(fields.timing.value);
+      } else if (recurrence !== "daily") {
+        const timingValue = fields.timing.value.trim();
+        if (timingValue) {
+          config.timing = Number(timingValue);
+        }
+      }
+
+      config.directory = fields.directory.value.trim();
+
+      addIfNonDefault(config, "instance", fields.instance.value, DEFAULTS.instance);
+      addIfNonDefault(config, "database", fields.database.value, DEFAULTS.database);
+      addIfNonDefault(config, "delimiter", fields.delimiter.value, DEFAULTS.delimiter);
+
+      const tq = fields.enforced_text_qualifier.value.trim();
+      if (tq) {
+        config.enforced_text_qualifier = tq;
+      }
+
+      addIfNonDefault(config, "extension", fields.extension.value, DEFAULTS.extension);
+
+      const sqlfilename = stripSqlExtension(fields.sqlfilename.value);
+      if (sqlfilename && sqlfilename !== baseName) {
+        config.sqlfilename = sqlfilename;
+      }
+
+      const outputfilename = fields.outputfilename.value.trim();
+      if (outputfilename && outputfilename !== baseName) {
+        config.outputfilename = outputfilename;
+      }
+
+      const datestamp = fields.datestamp.value.trim();
+      if (datestamp) {
+        config.datestamp = datestamp;
+      }
+
+      const variables = getVariableValues();
+      if (Object.keys(variables).length) {
+        config.variables = variables;
+      }
+
+      config.configcreationuser = fields.configcreationuser.value.trim();
+      config.configcreationdatetime = getLocalDateTimeStamp();
+      config.configcreationapp = getConfigCreationApp();
+
+      return config;
+    }
+
+    function addInvalid(element, condition) {
+      if (!element) return;
+      element.classList.toggle("invalid", Boolean(condition));
+    }
+
+    function getConfigFilename() {
+      const baseName = sanitizeFileBaseName(fields.configBaseName.value);
+      return baseName ? `${baseName}.json` : "—";
+    }
+
+    function getEffectiveSqlFilenameBase() {
+      const explicit = stripSqlExtension(fields.sqlfilename.value);
+      const uploaded = stripSqlExtension(state.sqlFileName);
+      const configBase = sanitizeFileBaseName(fields.configBaseName.value);
+      return explicit || uploaded || configBase || "";
+    }
+
+    function getSqlDownloadFilename() {
+      if (!state.sqlText || !state.sqlFileName) {
+        return "—";
+      }
+
+      const effectiveBase = getEffectiveSqlFilenameBase();
+      return effectiveBase ? `${effectiveBase}.sql` : state.sqlFileName;
+    }
+
+    function shouldDownloadRenamedSql() {
+      if (!state.sqlText || !state.sqlFileName) {
+        return false;
+      }
+
+      const uploadedBase = stripSqlExtension(state.sqlFileName);
+      const effectiveBase = getEffectiveSqlFilenameBase();
+
+      return Boolean(effectiveBase && uploadedBase && effectiveBase !== uploadedBase);
+    }
+
+    function getCurrentMultiVersionNames() {
+      return {
+        configFile: normalizeNameForCompare(getConfigFilename()),
+        sqlfilename: normalizeNameForCompare(stripSqlExtension(fields.sqlfilename.value)),
+        outputfilename: normalizeNameForCompare(fields.outputfilename.value)
+      };
+    }
+
+    function findMultiVersionReuse() {
+      const current = getCurrentMultiVersionNames();
+      const reuse = [];
+
+      for (const created of state.createdMultiVersionNames) {
+        if (current.configFile && current.configFile === created.configFile) {
+          reuse.push({
+            targetId: "configBaseName",
+            message: "Run config filename base has already been used in this multiple-version group."
+          });
+        }
+
+        if (current.sqlfilename && current.sqlfilename === created.sqlfilename) {
+          reuse.push({
+            targetId: "sqlfilename",
+            message: "Sqlfilename has already been used in this multiple-version group."
+          });
+        }
+
+        if (current.outputfilename && current.outputfilename === created.outputfilename) {
+          reuse.push({
+            targetId: "outputfilename",
+            message: "Outputfilename has already been used in this multiple-version group."
+          });
+        }
+      }
+
+      const seen = new Set();
+      return reuse.filter(item => {
+        const key = `${item.targetId}|${item.message}`;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+    }
+
+    function rememberCurrentMultiVersionNames() {
+      state.createdMultiVersionNames.push(getCurrentMultiVersionNames());
+    }
+
+    function addError(errors, targetId, message) {
+      errors.push({ targetId, message });
+    }
+
+    function validate() {
+      const errors = [];
+
+      const creator = fields.configcreationuser.value.trim();
+      const baseName = sanitizeFileBaseName(fields.configBaseName.value);
+      const recurrence = fields.recurrence.value;
+      const directory = fields.directory.value.trim();
+      const multiple = getVersionMode() === "multiple";
+      const sqlfilename = stripSqlExtension(fields.sqlfilename.value);
+      const outputfilename = fields.outputfilename.value.trim();
+
+      if (!creator) {
+        addError(errors, "configcreationuser", "Your name is required.");
+      }
+
+      if (!baseName) {
+        addError(errors, "configBaseName", "Run config filename base is required.");
+      }
+
+      if (!directory) {
+        addError(errors, "directory", "Directory or email list is required.");
+      } else if (!isValidDirectoryOrEmails(directory)) {
+        addError(errors, "directory", "Directory must be a forward-slash UNC path beginning with //, or a comma-delimited list of valid email addresses.");
+      }
+
+      if (!recurrence) {
+        addError(errors, "recurrence", "Recurrence is required.");
+      }
+
+      if (!isValidTiming(recurrence, fields.timing.value)) {
+        if (recurrence === "dayofmonth") {
+          addError(errors, "timing", "Calendar day must be an integer from 1 through 31.");
+        } else if (recurrence === "dayofweek") {
+          addError(errors, "timing", "Day of week must be an integer from 1 through 7.");
+        } else if (recurrence === "datelist") {
+          addError(errors, "timing", "Datelist must contain one or more comma-delimited MM-DD dates.");
+        }
+      }
+
+      if (/\.sql$/i.test(fields.sqlfilename.value.trim())) {
+        addError(errors, "sqlfilename", "Sqlfilename should not include the .sql extension.");
+      }
+
+      if (multiple && !sqlfilename) {
+        addError(errors, "sqlfilename", "Sqlfilename is required when creating multiple versions.");
+      }
+
+      if (multiple && !outputfilename) {
+        addError(errors, "outputfilename", "Outputfilename is required when creating multiple versions.");
+      }
+
+      if (multiple) {
+        errors.push(...findMultiVersionReuse());
+      }
+
+      for (const variable of state.detectedVariables) {
+        const input = document.querySelector(
+          `[data-variable-name="${CSS.escape(variable)}"]`
+        );
+
+        const rawValue = input ? input.value.trim() : "";
+        const parsed = parseVariableInput(rawValue);
+
+        if (!parsed.ok) {
+          addError(errors, input.id, `Variable ${variable}: ${parsed.message}`);
+          addInvalid(input, true);
+        } else {
+          addInvalid(input, false);
+        }
+      }
+
+      addInvalid(fields.configcreationuser, !creator);
+      addInvalid(fields.configBaseName, !baseName);
+      addInvalid(fields.directory, directory && !isValidDirectoryOrEmails(directory) ? true : !directory);
+      addInvalid(fields.timing, recurrence !== "daily" && !isValidTiming(recurrence, fields.timing.value));
+      addInvalid(fields.sqlfilename, /\.sql$/i.test(fields.sqlfilename.value.trim()) || (multiple && !sqlfilename));
+      addInvalid(fields.outputfilename, multiple && !outputfilename);
+
+      const reuseMessages = multiple ? findMultiVersionReuse() : [];
+      if (reuseMessages.some(item => item.targetId === "sqlfilename")) {
+        addInvalid(fields.sqlfilename, true);
+      }
+      if (reuseMessages.some(item => item.targetId === "outputfilename")) {
+        addInvalid(fields.outputfilename, true);
+      }
+      if (reuseMessages.some(item => item.targetId === "configBaseName")) {
+        addInvalid(fields.configBaseName, true);
+      }
+
+      renderErrors(errors);
+
+      return errors;
+    }
+
+    function renderErrors(errors) {
+      fields.errors.style.display = errors.length ? "block" : "none";
+      fields.errorList.innerHTML = "";
+
+      for (const error of errors) {
+        const li = document.createElement("li");
+        const btn = document.createElement("button");
+
+        btn.type = "button";
+        btn.className = "error-link";
+        btn.textContent = error.message;
+        btn.dataset.targetId = error.targetId;
+
+        btn.addEventListener("click", () => {
+          jumpToField(error.targetId);
+        });
+
+        li.appendChild(btn);
+        fields.errorList.appendChild(li);
+      }
+    }
+
+    function jumpToField(targetId) {
+      const target = document.getElementById(targetId);
+      if (!target) return;
+
+      const container = target.closest(".section, .var-card") || target;
+
+      container.scrollIntoView({
+        behavior: "smooth",
+        block: "center"
+      });
+
+      setTimeout(() => {
+        if (typeof target.focus === "function") {
+          target.focus({ preventScroll: true });
+        }
+      }, 350);
+    }
+
+    function pythonishDatePreview(format) {
+      const d = new Date();
+
+      const parts = {
+        "%Y": d.getFullYear().toString(),
+        "%y": String(d.getFullYear()).slice(-2),
+        "%m": String(d.getMonth() + 1).padStart(2, "0"),
+        "%-m": String(d.getMonth() + 1),
+        "%d": String(d.getDate()).padStart(2, "0"),
+        "%-d": String(d.getDate()),
+        "%H": String(d.getHours()).padStart(2, "0"),
+        "%M": String(d.getMinutes()).padStart(2, "0"),
+        "%S": String(d.getSeconds()).padStart(2, "0")
+      };
+
+      let out = format || "%Y%m%d";
+
+      for (const [token, value] of Object.entries(parts)) {
+        out = out.split(token).join(value);
+      }
+
+      return out;
+    }
+
+    function getOutputFilenamePreview() {
+      const baseName = sanitizeFileBaseName(fields.configBaseName.value);
+      const extension = fields.extension.value.trim() || DEFAULTS.extension;
+      const rawOutput = fields.outputfilename.value.trim() || baseName;
+
+      if (!rawOutput) return "—";
+
+      const datestampFormat = fields.datestamp.value.trim() || "%Y%m%d";
+
+      let outputBase = rawOutput.replace(
+        /\{\{\s*datestamp\s*\}\}/gi,
+        pythonishDatePreview(datestampFormat)
+      );
+
+      if (!/\.[A-Za-z0-9]+$/.test(outputBase)) {
+        outputBase += `.${extension}`;
+      }
+
+      return outputBase;
+    }
+
+    function updatePreview() {
+      updateVersionModeUi();
+
+      const config = buildConfig();
+      const json = JSON.stringify(config, null, 2);
+
+      fields.previewConfigName.textContent = getConfigFilename();
+      fields.previewOutputName.textContent = getOutputFilenamePreview();
+
+      const sqlDownloadName = getSqlDownloadFilename();
+      fields.previewSqlDownloadName.textContent = shouldDownloadRenamedSql()
+        ? `${sqlDownloadName} — renamed copy will download`
+        : sqlDownloadName;
+
+      fields.jsonPreview.textContent = json;
+
+      validate();
+    }
+
+    function downloadTextFile(filename, content, mimeType) {
+      const blob = new Blob([content], { type: mimeType });
+      const link = document.createElement("a");
+
+      link.href = URL.createObjectURL(blob);
+      link.download = filename;
+
+      document.body.appendChild(link);
+      link.click();
+
+      setTimeout(() => {
+        URL.revokeObjectURL(link.href);
+        link.remove();
+      }, 0);
+    }
+
+    function downloadJson() {
+      const errors = validate();
+
+      if (errors.length) {
+        fields.successNotice.classList.add("hidden");
+        return;
+      }
+
+      cacheUser();
+
+      const config = buildConfig();
+      const filename = getConfigFilename() === "—" ? "run-config.json" : getConfigFilename();
+
+      downloadTextFile(
+        filename,
+        JSON.stringify(config, null, 2) + "\n",
+        "application/json"
+      );
+
+      let message = `Created ${filename}.`;
+
+      if (shouldDownloadRenamedSql()) {
+        const sqlDownloadName = getSqlDownloadFilename();
+
+        downloadTextFile(
+          sqlDownloadName,
+          state.sqlText,
+          "text/plain"
+        );
+
+        message += ` Also downloaded renamed SQL file ${sqlDownloadName}.`;
+      }
+
+      if (getVersionMode() === "multiple") {
+        rememberCurrentMultiVersionNames();
+        message += " This name set is now reserved in the current multiple-version group.";
+      }
+
+      message += " You can adjust version-specific fields and create another config without reloading values.";
+
+      fields.successNotice.textContent = message;
+      fields.successNotice.classList.remove("hidden");
+
+      updatePreview();
+    }
+
+    async function copyJson() {
+      const text = fields.jsonPreview.textContent;
+
+      try {
+        await navigator.clipboard.writeText(text);
+        fields.successNotice.textContent = "JSON copied to clipboard.";
+        fields.successNotice.classList.remove("hidden");
+      } catch {
+        fields.successNotice.textContent =
+          "Clipboard copy was blocked by the browser. You can manually select and copy the preview.";
+        fields.successNotice.classList.remove("hidden");
+      }
+    }
+
+    function clearAll() {
+      const cachedUser = localStorage.getItem(STORAGE_KEYS.configcreationuser);
+
+      fields.form.reset();
+
+      if (cachedUser) {
+        fields.configcreationuser.value = cachedUser;
+      }
+
+      state.sqlFileName = "";
+      state.sqlText = "";
+      state.detectedVariables = [];
+      state.createdMultiVersionNames = [];
+
+      for (const item of document.querySelectorAll(".invalid")) {
+        item.classList.remove("invalid");
+      }
+
+      fields.successNotice.classList.add("hidden");
+      fields.errors.style.display = "none";
+
+      updateTimingUi();
+      renderVariables();
+      updatePreview();
+    }
+
+    function insertAtCursor(input, text) {
+      const start = input.selectionStart ?? input.value.length;
+      const end = input.selectionEnd ?? input.value.length;
+      const before = input.value.slice(0, start);
+      const after = input.value.slice(end);
+
+      input.value = before + text + after;
+
+      const pos = start + text.length;
+      input.focus();
+      input.setSelectionRange(pos, pos);
+
+      updatePreview();
+    }
+
+    function appendDatestamp() {
+      const current = fields.outputfilename.value.trim();
+
+      if (!current) {
+        fields.outputfilename.value = "{{datestamp}}";
+      } else if (!current.includes("{{datestamp}}")) {
+        fields.outputfilename.value = `${current} {{datestamp}}`;
+      }
+
+      updatePreview();
+    }
+
+    fields.sqlUpload.addEventListener("change", async event => {
+      const file = event.target.files && event.target.files[0];
+
+      state.sqlFileName = file ? file.name : "";
+      state.sqlText = "";
+      state.detectedVariables = [];
+
+      if (!file) {
+        renderVariables();
+        updatePreview();
+        return;
+      }
+
+      const text = await file.text();
+
+      state.sqlText = text;
+      state.detectedVariables = parseSqlVariables(text);
+
+      if (!fields.sqlfilename.value.trim()) {
+        fields.sqlfilename.value = stripSqlExtension(file.name);
+      }
+
+      renderVariables();
+      updatePreview();
+    });
+
+    fields.configcreationuser.addEventListener("change", cacheUser);
+    fields.configcreationuser.addEventListener("blur", cacheUser);
+
+    fields.recurrence.addEventListener("change", () => {
+      updateTimingUi();
+      updatePreview();
+    });
+
+    document.querySelectorAll("input[name='versionMode']").forEach(radio => {
+      radio.addEventListener("change", updatePreview);
+    });
+
+    [
+      fields.configcreationuser,
+      fields.configBaseName,
+      fields.directory,
+      fields.timing,
+      fields.sqlfilename,
+      fields.delimiter,
+      fields.extension,
+      fields.enforced_text_qualifier,
+      fields.instance,
+      fields.database,
+      fields.datestamp,
+      fields.outputfilename
+    ].forEach(input => {
+      input.addEventListener("input", updatePreview);
+      input.addEventListener("change", updatePreview);
+    });
+
+    el("insertDatestampBtn").addEventListener("click", () => {
+      insertAtCursor(fields.outputfilename, "{{datestamp}}");
+    });
+
+    el("appendDatestampBtn").addEventListener("click", appendDatestamp);
+    el("createBtn").addEventListener("click", downloadJson);
+    el("downloadAgainBtn").addEventListener("click", downloadJson);
+    el("copyBtn").addEventListener("click", copyJson);
+    el("clearBtn").addEventListener("click", clearAll);
+
+    initAppMetadata();
+    loadCachedUser();
+    updateTimingUi();
+    renderVariables();
+    updatePreview();
+  </script>
+</body>
+</html>
